@@ -1,0 +1,18 @@
+apiVersion: v1
+entries:
+  example-chart:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2020-04-24T18:29:46.628479803Z"
+    description: A Helm chart for Kubernetes
+    digest: 4c309f0d29d036f9f0de96584803c1754fac0da4d5f19d98e4653e21b484c2bf
+    home: https://nginx.com
+    maintainers:
+    - email: justin.hollingsworth@coveros.com
+      name: justin-coveros
+    name: example-chart
+    type: application
+    urls:
+    - https://github.com/Coveros/charts/releases/download/example-chart-0.1.1/example-chart-0.1.1.tgz
+    version: 0.1.1
+generated: "2020-04-24T18:29:46.495407047Z"
