@@ -1,0 +1,5 @@
+# Helm chart automated files
+charts/*/charts
+
+# IDE
+.idea
