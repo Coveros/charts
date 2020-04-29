@@ -15,4 +15,30 @@ entries:
     urls:
     - https://github.com/Coveros/charts/releases/download/example-chart-0.1.1/example-chart-0.1.1.tgz
     version: 0.1.1
+  nexus-repository:
+  - apiVersion: v1
+    appVersion: 3.22.0
+    created: "2020-04-29T16:40:18.261491071Z"
+    description: Sonatype Nexus is an open source repository manager
+    digest: 551e53e8207be44539a45de664ee56f7922c9227ef9c46dc66b0d8d3fd7bc019
+    home: https://www.sonatype.com/nexus-repository-oss
+    icon: http://www.sonatype.org/nexus/content/uploads/2015/06/Nexus-Logo.jpg
+    keywords:
+    - artifacts
+    - dependency
+    - management
+    - sonatype
+    - nexus
+    - repository
+    maintainers:
+    - email: justin.hollingsworth@coveros.com
+      name: justin-coveros
+    name: nexus-repository
+    sources:
+    - https://github.com/sonatype/nexus-public
+    - https://github.com/travelaudience/docker-nexus
+    - https://github.com/travelaudience/kubernetes-nexus
+    urls:
+    - https://github.com/Coveros/charts/releases/download/nexus-repository-0.1.0-dev/nexus-repository-0.1.0-dev.tgz
+    version: 0.1.0-dev
 generated: "2020-04-24T18:29:46.495407047Z"
