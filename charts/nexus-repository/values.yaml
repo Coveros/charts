@@ -1,0 +1,169 @@
+statefulset:
+  enabled: false
+replicaCount: 1
+# By default deploymentStrategy is set to rollingUpdate with maxSurge of 25% and maxUnavailable of 25% . you can change type to `Recreate` or can uncomment `rollingUpdate` specification and adjust them to your usage.
+deploymentStrategy: {}
+  # rollingUpdate:
+  #   maxSurge: 25%
+  #   maxUnavailable: 25%
+  # type: RollingUpdate
+
+nexus:
+  imageRepository: quay.io/travelaudience/docker-nexus
+  imageTag: 3.22.0-02
+  imagePullPolicy: IfNotPresent
+  imagePullSecretName:
+  # Uncomment this to scheduler pods on priority
+  # priorityClassName: "high-priority"
+  env:
+    - name: install4jAddVmParams
+      value: "-Xms1200M -Xmx1200M -XX:MaxDirectMemorySize=2G -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
+    - name: NEXUS_SECURITY_RANDOMPASSWORD
+      value: "false"
+  nodeSelector: {}
+  resources: {}
+    # requests:
+      ## Based on https://support.sonatype.com/hc/en-us/articles/115006448847#mem
+      ## and https://twitter.com/analytically/status/894592422382063616:
+      ##   Xms == Xmx
+      ##   Xmx <= 4G
+      ##   MaxDirectMemory >= 2G
+      ##   Xmx + MaxDirectMemory <= RAM * 2/3 (hence the request for 4800Mi)
+      ##   MaxRAMFraction=1 is not being set as it would allow the heap
+      ##     to use all the available memory.
+      # cpu: 250m
+      # memory: 4800Mi
+  securityContextEnabled: true
+  securityContext:
+    fsGroup: 200
+  podAnnotations: {}
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    failureThreshold: 6
+    # timeoutSeconds: 10
+    path: /
+  readinessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    failureThreshold: 6
+    # timeoutSeconds: 10
+    path: /
+  # hostAliases allows the modification of the hosts file inside a container
+  hostAliases: []
+  # - ip: "192.168.1.10"
+  #   hostnames:
+  #   - "example.com"
+  #   - "www.example.com"
+
+service:
+  type: ClusterIP
+  annotations: {}
+  labels: {}
+  docker:
+    port: 5003
+    targetPort: 5003
+    # To set nodePort explicitly, choose port between 30000-32767
+    nodePort:
+  http:
+    port: 8081
+    targetPort: 8081
+    # To set nodePort explicitly, choose port between 30000-32767
+    nodePort:
+  ## When using LoadBalancer service type, whitelist these source IP ranges
+  ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/
+  # loadBalancerSourceRanges:
+  #   - 192.168.1.10/32
+
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  ## If defined, storageClass: <storageClass>
+  ## If set to "-", storageClass: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClass spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  # existingClaim:
+  # annotations:
+  #  "helm.sh/resource-policy": keep
+  # storageClass: "-"
+  storageSize: 8Gi
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+  annotations: {}
+
+ingress:
+  enabled: false
+  annotations: {}
+  path: /
+  labels: {}
+  # # NOTE: Can't use 'false' due to https://github.com/jetstack/kube-lego/issues/173.
+  # kubernetes.io/ingress.allow-http: true
+  # kubernetes.io/ingress.class: gce
+  # kubernetes.io/ingress.global-static-ip-name: ""
+  # kubernetes.io/tls-acme: true
+  tls:
+    enabled: true
+    secretName: nexus-tls
+  # Specify custom rules in addition to or instead of the nexus-proxy rules
+  rules:
+  # - host: http://nexus.127.0.0.1.nip.io
+  #   http:
+  #     paths:
+  #     - backend:
+  #         serviceName: additional-svc
+  #         servicePort: 80
+
+tolerations: []
+
+# # Enable configmap and add data in configmap
+config:
+  enabled: false
+  mountPath: /sonatype-nexus-conf
+  data: {}
+
+deployment:
+  additionalContainers:
+  additionalVolumes:
+  additionalVolumeMounts:
+  # # Add annotations in deployment to enhance deployment configurations
+  annotations: {}
+  labels: {}
+  # # Add init containers. e.g. to be used to give specific permissions for nexus-data.
+  # # Add your own init container or uncomment and modify the given example.
+  initContainers:
+  # - name: fmp-volume-permission
+    # image: busybox
+    # imagePullPolicy: IfNotPresent
+    # command: ['chown','-R', '200', '/nexus-data']
+    # volumeMounts:
+      # - name: nexus-data
+        # mountPath: /nexus-data
+  # # Uncomment and modify this to run a command after starting the nexus container.
+  postStart:
+    command:    # '["/bin/sh", "-c", "ls"]'
+
+# # To use an additional secret, set enable to true and add data
+secret:
+  enabled: false
+  mountPath: /etc/secret-volume
+  readOnly: true
+  data: {}
+
+additionalConfigMaps: []
+#  - name: maven-central
+#    labels:
+#      nexus-type: repository
+#    data:
+#      recipe: 'MavenProxy'
+#      remoteUrl: 'https://repo.maven.apache.org/maven2/'
+#      blobStoreName: 'default'
+#      strictContentTypeValidation: 'true'
+#      versionPolicy: 'RELEASE'
+#      layoutPolicy: 'STRICT'

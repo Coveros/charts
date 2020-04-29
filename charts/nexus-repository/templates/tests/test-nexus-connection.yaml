@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "nexus-repository.fullname" . }}-test-connection"
+  labels:
+  {{- include "nexus-repository.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "nexus-repository.fullname" . }}:{{ .Values.service.http.port }}']
+  restartPolicy: Never

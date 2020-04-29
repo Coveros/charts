@@ -1,0 +1,18 @@
+{{ $root := . }}
+{{- if .Values.additionalConfigMaps }}
+{{- range $cm := .Values.additionalConfigMaps }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $cm.name }}
+  labels:
+    {{- include "nexus-repository.labels" $root | nindent 4 }}
+    {{- if $cm.labels }}
+    {{- toYaml $cm.labels | nindent 4 }}
+    {{- end }}
+data:
+  {{- toYaml $cm.data | nindent 2 }}
+{{- end }}
+{{- end }}
+

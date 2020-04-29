@@ -1,0 +1,27 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "nexus-repository.fullname" . }}
+  labels:
+    {{- include "nexus-repository.labels" . | nindent 4 }}
+    {{- range $key, $value := .Values.ingress.labels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  annotations:
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  rules:
+    {{- with .Values.ingress.rules }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+    {{- if .Values.ingress.tls.secretName }}
+      secretName: {{ .Values.ingress.tls.secretName | quote }}
+    {{- end }}
+{{- end }}
+{{- end }}

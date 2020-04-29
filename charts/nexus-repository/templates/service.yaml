@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nexus-repository.fullname" . }}
+  labels:
+    {{- include "nexus-repository.labels" . | nindent 4 }}
+    {{- if .Values.service.labels }}
+    {{- toYaml .Values.service.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.service.annotations }}
+  annotations:
+    {{- toYaml .Values.service.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  - name: http
+    port: {{ .Values.service.http.port }}
+    targetPort: {{ .Values.service.http.targetPort }}
+    {{- if (and (eq .Values.service.type "NodePort") (not (empty .Values.service.http.nodePort))) }}
+    nodePort: {{.Values.service.http.nodePort}}
+    {{- end }}
+  - name: docker
+    port: {{ .Values.service.docker.port }}
+    targetPort: {{ .Values.service.docker.targetPort }}
+    {{- if (and (eq .Values.service.type "NodePort") (not (empty .Values.service.docker.nodePort))) }}
+    nodePort: {{.Values.service.docker.nodePort}}
+    {{- end }}
+  selector:
+    {{- include "nexus-repository.selectorLabels" . | nindent 4 }}
+  {{- if .Values.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+    {{- range .Values.service.loadBalancerSourceRanges }}
+    - {{ . }}
+    {{- end }}
+  {{- end }}
