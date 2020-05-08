@@ -77,16 +77,18 @@ The following table lists the configurable parameters of the Nexus chart and the
 | `deploymentStrategy`                        | Deployment Strategy                 | `{}`                                    |
 | `ingress.annotations`                       | Annotations to enhance ingress configuration  | `{}`                          |
 | `ingress.enabled`                           | Create an ingress for Nexus         | `false`                                 |
-| `ingress.path`                              | Path for ingress rules.             | `/`                                     |
 | `ingress.labels`                            | Ingress Labels                      | `{}`                                    |
-| `ingress.tls.enabled`                       | Enable TLS                          | `true`                                  |
-| `ingress.tls.secretName`                    | Name of the secret storing TLS cert, `false` to use the Ingress' default certificate | `nexus-tls` |
+| `ingress.httpHosts[0].host`                 | Nexus Ingress hostname              | `nexus.local`                           |
+| `ingress.httpHosts[0].paths`                | Nexus Ingress paths                 | `[]`                                    |
+| `ingress.dockerHosts[0].host`               | Docker Ingress hostname             | `nexus-docker.local`                    |
+| `ingress.dockerHosts[0].paths`              | Docker Ingress paths                | `[]`                                    |
+| `ingress.tls`                               | Ingress secrets for TLS certificates| `[]`                                    |
 | `nexus.imageRepository`                     | Nexus image                         | `quay.io/travelaudience/docker-nexus`   |
 | `nexus.imageTag`                            | Version of Nexus                    | `3.22.0-02`                             |
 | `nexus.imagePullPolicy`                     | Nexus image pull policy             | `IfNotPresent`                          |
 | `nexus.imagePullSecretName`                 | Secret to download Nexus image from private registry      | Not Set           |
 | `nexus.priorityClassName`                   | Schedule pods on priority           | Not Set                                 |
-| `nexus.env`                                 | Nexus environment variables         | `[{install4jAddVmParams: -Xms1200M -Xmx1200M -XX:MaxDirectMemorySize=2G -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap}]` |
+| `nexus.env`                                 | Nexus environment variables         | `[]`                                    |
 | `nexus.nodeSelector`                        | Node labels for pod assignment      | `{}`                                    |
 | `nexus.resources`                           | Nexus resource requests and limits  | `{}`                                    |
 | `nexus.securityContextEnabled`              | Enable security context             | `true`                                  |
@@ -155,20 +157,32 @@ can not recover data after restart or delete of helm chart. Statefulset will mak
 volume which was used by the previous life of the nexus pod, helping you recover your data. When enabling statefulset, 
 its required to enable the persistence.
 
-## After Installing the Chart
-After installing the chart a couple of actions need still to be done in order to use nexus. Please follow the instructions below.
+### Context Path
 
-### Nexus Configuration
-The following steps need to be executed in order to use Nexus:
+If a path is set for the ingress, the `NEXUS_CONTEXT` environment variable should be added to `nexus.env`. This
+environment variable configures `nexus-context-path` defined in `/opt/sonatype/nexus/etc/nexus-default.properties`
 
-- [Configure Nexus](https://github.com/travelaudience/kubernetes-nexus/blob/master/docs/admin/configuring-nexus.md)
+```yaml
+nexus:
+  env:
+    - name: NEXUS_CONTEXT
+      value: nexus
+```
 
-### Nexus Usage
-To see how to use Nexus with different tools like Docker, Maven, Python, and so on please check:
+### Initial Password
 
-- [Nexus Usage](https://github.com/travelaudience/kubernetes-nexus#usage)
+During installation, an `admin` user is created with a random password. The initial password for the `admin` user can be found
+in the `/nexus-data/admin.password` file. 
 
-### Disaster Recovery
-In a disaster recovery scenario, the latest backup made by the nexus-backup container should be restored. In order to 
-achieve this please follow the procedure described below:
-- [Restore Backups](https://github.com/travelaudience/kubernetes-nexus#restore)
+Alternatively, the environment variable `NEXUS_SECURITY_RANDOMPASSWORD` can be set to `false` to disable this functionality,
+and to set the inital `admin` user password to `admin123`.
+
+```yaml
+nexus:
+  env:
+    - name: NEXUS_SECURITY_RANDOMPASSWORD
+      value: "false"
+```  
+
+We highly recommend changing the initial password upon first login.
+
